@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <limine.h>
+#include "serial.h"
 
 // Set the base revision to 3, this is recommended as this is the latest
 // base revision described by the Limine boot protocol specification.
@@ -89,6 +90,7 @@ int memcmp(const void *s1, const void *s2, size_t n) {
 
 // Halt and catch fire function.
 static void stop(void) {
+    write_serial_str("Aborting.\n");
     for (;;) {
         asm ("hlt");
     }
@@ -96,6 +98,8 @@ static void stop(void) {
 
 // The following will be our kernel's entry point.
 void kernel_entrypoint(void) {
+    int SERIAL_STATUS = init_serial();
+    write_serial_str("Kernel entered.\n");
     // Ensure the bootloader actually understands our base revision (see spec).
     if (LIMINE_BASE_REVISION_SUPPORTED == false) {
         stop();
