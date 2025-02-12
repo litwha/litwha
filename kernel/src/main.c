@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <limine.h>
 #include "serial.h"
-
+#include "interrupts.h"
 
 // Set the base revision to 3, this is recommended as this is the latest
 // base revision described by the Limine boot protocol specification.
@@ -101,6 +101,7 @@ int memcmp(const void *s1, const void *s2, size_t n)
 static void stop(void)
 {
     write_serial_str("Aborting.\n");
+    asm("cli");
     for (;;)
     {
         asm("hlt");
@@ -110,7 +111,7 @@ static void stop(void)
 static void spin(void) {
     write_serial_str("Spinning.\n");
     for (;;) {
-        asm ("nop");
+        asm ("hlt");
     }
 }
 
@@ -119,9 +120,9 @@ void kernel_entrypoint(void)
 {
     int SERIAL_STATUS = init_serial();
     write_serial_str("Kernel entered.\n");
-    write_serial_str("Initializing global descriptor table.\n");
-    gdt_init();
-    write_serial_str("GDT initialized.\n");
+    write_serial_str("Initializing interrupt descriptor table.\n");
+    idt_init();
+    write_serial_str("IDT initialized.\n");
     // Ensure the bootloader actually understands our base revision (see spec).
     if (LIMINE_BASE_REVISION_SUPPORTED == false)
     {
