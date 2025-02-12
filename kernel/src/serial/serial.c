@@ -1,9 +1,9 @@
 #include "string.h"
 #include <stdint.h>
 
-#include "./inline/inline.c"
-#include "./io/io.h"
-#include "./serial/serial.h"
+#include "../io/io.c"
+#include "../io/io.h"
+#include "serial.h"
 #define PORT 0x3f8 // COM1
 
 int init_serial()

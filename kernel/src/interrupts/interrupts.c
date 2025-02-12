@@ -58,6 +58,12 @@ void idt_init()
         vectors[vector] = true;
     }
 
+    for (uint8_t vector = 32; vector < 47; vector++)
+    {
+        idt_set_descriptor(vector, isr_stub_table[vector], 0x8E);
+        vectors[vector] = true;
+    }
+
     __asm__ volatile("lidt %0" : : "m"(idtr)); // load the new IDT
     __asm__ volatile("sti");                   // set the interrupt flag
 }

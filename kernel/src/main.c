@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <limine.h>
-#include "./serial/serial.h"
+#include "./io/io.h"
 #include "./interrupts/interrupts.h"
 
 // Set the base revision to 3, this is recommended as this is the latest
@@ -117,14 +117,19 @@ static void spin(void)
     }
 }
 
-// The following will be our kernel's entry point.
 void kernel_entrypoint(void)
 {
     int SERIAL_STATUS = init_serial();
     write_serial_str("Kernel entered.\n");
+
     write_serial_str("Initializing interrupt descriptor table.\n");
     idt_init();
     write_serial_str("IDT initialized.\n");
+
+    write_serial_str("Remapping PIC.\n");
+    pic_remap(0x20, 0x28); // Master PIC: 0x20, Slave PIC: 0x28
+    write_serial_str("PIC remapped.\n");
+
     // Ensure the bootloader actually understands our base revision (see spec).
     if (LIMINE_BASE_REVISION_SUPPORTED == false)
     {
