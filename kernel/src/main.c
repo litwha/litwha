@@ -2,8 +2,8 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <limine.h>
-#include "serial.h"
-#include "interrupts.h"
+#include "./serial/serial.h"
+#include "./interrupts/interrupts.h"
 
 // Set the base revision to 3, this is recommended as this is the latest
 // base revision described by the Limine boot protocol specification.
@@ -108,10 +108,12 @@ static void stop(void)
     }
 }
 
-static void spin(void) {
+static void spin(void)
+{
     write_serial_str("Spinning.\n");
-    for (;;) {
-        asm ("hlt");
+    for (;;)
+    {
+        asm("hlt");
     }
 }
 
