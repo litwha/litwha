@@ -2,6 +2,7 @@
 #include <stdint.h>
 
 #include "inline.c"
+#include "io.h"
 #include "serial.h"
 #define PORT 0x3f8 // COM1
 
