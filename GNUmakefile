@@ -2,8 +2,15 @@
 MAKEFLAGS += -rR
 .SUFFIXES:
 
+# Detect if running on wsl
+WSL2 := $(shell grep -q microsoft-standard /proc/sys/kernel/osrelease && echo 1)
+
 # Default user QEMU flags. These are appended to the QEMU command calls.
-QEMUFLAGS := -m 2G -serial stdio
+ifeq ($(WSL2),1)
+	QEMUFLAGS := -m 2G -serial stdio -display sdl
+else
+	QEMUFLAGS := -m 2G -serial stdio
+endif
 
 override IMAGE_NAME := litwha
 
