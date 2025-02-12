@@ -107,11 +107,21 @@ static void stop(void)
     }
 }
 
+static void spin(void) {
+    write_serial_str("Spinning.\n");
+    for (;;) {
+        asm ("nop");
+    }
+}
+
 // The following will be our kernel's entry point.
 void kernel_entrypoint(void)
 {
     int SERIAL_STATUS = init_serial();
     write_serial_str("Kernel entered.\n");
+    write_serial_str("Initializing global descriptor table.\n");
+    gdt_init();
+    write_serial_str("GDT initialized.\n");
     // Ensure the bootloader actually understands our base revision (see spec).
     if (LIMINE_BASE_REVISION_SUPPORTED == false)
     {
@@ -125,19 +135,19 @@ void kernel_entrypoint(void)
     }
 
     // Fetch the first framebuffer.
-    struct limine_framebuffer *framebuffer = framebuffer_request.response->framebuffers[0];
+    struct limine_framebuffer *framebuf = framebuffer_request.response->framebuffers[0];
 
     // Note: we assume the framebuffer model is RGB with 32-bit pixels for right now.
     for (size_t i = 0; i < 255; i++)
     {
         for (size_t j = 0; j < 255; j++)
         {
-            volatile uint32_t *fb_ptr = framebuffer->address;
-            uint32_t color = (i << framebuffer->red_mask_shift) + (j << framebuffer->green_mask_shift);
-            fb_ptr[i * (framebuffer->pitch / (framebuffer->bpp >> 3)) + j] = color;
+            volatile uint32_t *fb_ptr = framebuf->address;
+            uint32_t color = (i << framebuf->red_mask_shift) + (j << framebuf->green_mask_shift);
+            fb_ptr[i * (framebuf->pitch / (framebuf->bpp >> 3)) + j] = color;
         }
     }
 
-    // We're done, just hang...
-    stop();
+    // We're done with initialization, so we should start spinning until an interrupt.
+    spin();
 }
