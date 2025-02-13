@@ -2,6 +2,8 @@
 #include <stdbool.h>
 #include "interrupts.h"
 #include "../serial/serial.h"
+#include "../pic/pic.h"
+#include "../string.h"
 
 typedef struct
 {
@@ -24,10 +26,29 @@ __attribute__((aligned(0x10))) static idt_entry_t idt[256];
 
 static idtr_t idtr;
 
-__attribute__((noreturn)) void exception_handler()
+void exception_handler()
 {
     write_serial_str("Halting from interrupt.\n");
     __asm__ volatile("cli\n hlt");
+}
+
+void irq_handler(uint8_t vector)
+{
+    uint8_t corrected = vector - 32;
+
+    char str[12];
+    iota(str, corrected);
+    write_serial_str("recieved irq ");
+    write_serial_str(str);
+    write_serial_str(" | ");
+
+    PIC_sendEOI(corrected); // Convert to IRQ number
+
+    // Add your IRQ handling logic here
+    if (corrected == 32)
+    { // Timer interrupt (IRQ0)
+        write_serial_str("Timer tick!");
+    }
 }
 
 void idt_set_descriptor(uint8_t vector, void *isr, uint8_t flags)

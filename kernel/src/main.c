@@ -3,7 +3,14 @@
 #include <stdbool.h>
 #include <limine.h>
 #include "./io/io.h"
+#include "./io/io.c"
 #include "./interrupts/interrupts.h"
+#define PIC1 0x20 /* IO base address for master PIC */
+#define PIC2 0xA0 /* IO base address for slave PIC */
+#define PIC1_COMMAND PIC1
+#define PIC1_DATA (PIC1 + 1)
+#define PIC2_COMMAND PIC2
+#define PIC2_DATA (PIC2 + 1)
 
 // Set the base revision to 3, this is recommended as this is the latest
 // base revision described by the Limine boot protocol specification.
@@ -117,6 +124,15 @@ static void spin(void)
     }
 }
 
+static inline bool are_interrupts_enabled()
+{
+    unsigned long flags;
+    asm volatile("pushf\n\t"
+                 "pop %0"
+                 : "=g"(flags));
+    return flags & (1 << 9);
+}
+
 void kernel_entrypoint(void)
 {
     int SERIAL_STATUS = init_serial();
@@ -129,6 +145,23 @@ void kernel_entrypoint(void)
     write_serial_str("Remapping PIC.\n");
     pic_remap(0x20, 0x28); // Master PIC: 0x20, Slave PIC: 0x28
     write_serial_str("PIC remapped.\n");
+
+    if (are_interrupts_enabled())
+    {
+        write_serial_str("Interrupts are enabled!\n");
+    }
+    else
+    {
+        write_serial_str("Interrupts are not enabled!\n");
+    }
+
+    outb(PIC1_DATA, 0xFE); // Unmask IRQ0 (timer)
+    outb(PIC2_DATA, 0xFF); // Mask all slave IRQs
+
+    // After PIC remap
+    outb(0x40, 0x36); // Set PIT channel 0
+    outb(0x40, 0xA8); // Low byte of divisor (1193182 Hz / 1000 Hz)
+    outb(0x40, 0x04); // High byte of divisor
 
     // Ensure the bootloader actually understands our base revision (see spec).
     if (LIMINE_BASE_REVISION_SUPPORTED == false)

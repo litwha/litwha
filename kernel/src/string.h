@@ -1,7 +1,7 @@
 #ifndef STRING_H_
 #define STRING_H_
-#include <stddef.h>
+#include <stdint.h>
 
-size_t strlen(const char* str);
-
+size_t strlen(const char *str);
+void iota(char *buffer, uint8_t num);
 #endif

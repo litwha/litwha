@@ -1,5 +1,6 @@
 #include "pic.h"
 #include "../io/io.c"
+#include "../serial/serial.h"
 
 #define PIC1 0x20 /* IO base address for master PIC */
 #define PIC2 0xA0 /* IO base address for slave PIC */
@@ -37,20 +38,20 @@ void pic_remap(int master_offset, int slave_offset)
     // Unmask both PICs.
     outb(PIC1_DATA, 0);
     outb(PIC2_DATA, 0);
-    }
+}
 
-    void pic_disable()
-    {
-        outb(PIC1_DATA, 0xff);
-        outb(PIC2_DATA, 0xff);
-    }
+void pic_disable()
+{
+    outb(PIC1_DATA, 0xff);
+    outb(PIC2_DATA, 0xff);
+}
 
-    #define PIC_EOI 0x20
+#define PIC_EOI 0x20
 
-    void PIC_sendEOI(uint8_t irq)
-    {
-        if (irq >= 8)
-            outb(PIC2_COMMAND, PIC_EOI);
+void PIC_sendEOI(uint8_t irq)
+{
+    if (irq >= 8)
+        outb(PIC2_COMMAND, PIC_EOI);
 
-        outb(PIC1_COMMAND, PIC_EOI);
-    }
+    outb(PIC1_COMMAND, PIC_EOI);
+}
