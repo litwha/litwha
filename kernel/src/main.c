@@ -3,7 +3,8 @@
 #include <stdbool.h>
 #include <limine.h>
 #include "./io/io.h"
-#include "./io/io.c"
+#include "./pic/pic.h"
+#include "./serial/serial.h"
 #include "./interrupts/interrupts.h"
 #define PIC1 0x20 /* IO base address for master PIC */
 #define PIC2 0xA0 /* IO base address for slave PIC */

@@ -1,5 +1,5 @@
 #include "pic.h"
-#include "../io/io.c"
+#include "../io/io.h"
 #include "../serial/serial.h"
 
 #define PIC1 0x20 /* IO base address for master PIC */
