@@ -64,12 +64,20 @@ void irq_handler(uint8_t vector)
     // Add your IRQ handling logic here
     if (corrected == 0)
     { // Timer interrupt (IRQ0)
-      tick++;
-      char tick_str[16];
-      iota64(tick_str, tick);
-      write_serial_str("tick ");
-      write_serial_str(tick_str);
-      write_serial_str("    \r");
+        /*
+        tick++;
+        char tick_str[16];
+        iota64(tick_str, tick);
+        write_serial_str("tick ");
+        write_serial_str(tick_str);
+        write_serial_str("    \r");
+        */
+        ;
+    }
+    else if (corrected == 1)
+    { // Keyboard (IRQ1) - We shouldn't read the keycode here! That could result in us sending invalid codes due to a badly timed interrupt!
+      // So we just set that we have key[s] to check.
+      // TODO: this
     }
     else
     {
