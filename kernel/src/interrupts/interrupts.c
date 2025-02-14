@@ -26,28 +26,59 @@ __attribute__((aligned(0x10))) static idt_entry_t idt[256];
 
 static idtr_t idtr;
 
-void exception_handler()
+void exception_handler(uint8_t vector, uint64_t error_code)
 {
-    write_serial_str("Halting from interrupt.\n");
+    char vec_str[4], err_hex[10];
+    iota(vec_str, vector);
+
+    iota(err_hex, error_code);
+
+    write_serial_str("\nEXCEPTION ");
+    write_serial_str(vec_str);
+    write_serial_str(" | Error: ");
+    write_serial_str(err_hex);
+    // ... rest of handler
+
+    // Print CR2 for page faults
+    if (vector == 14)
+    {
+        uint64_t cr2;
+        asm volatile("mov %%cr2, %0" : "=r"(cr2));
+        char cr2_str[12];
+        iota(cr2_str, cr2);
+        write_serial_str("\nCR2: ");
+        write_serial_str(cr2_str);
+        write_serial_str("\n");
+    }
+
     __asm__ volatile("cli\n hlt");
 }
 
+unsigned int tick = 0;
 void irq_handler(uint8_t vector)
 {
     uint8_t corrected = vector - 32;
 
-    char str[12];
-    iota(str, corrected);
-    write_serial_str("recieved irq ");
-    write_serial_str(str);
-    write_serial_str(" | ");
-
     PIC_sendEOI(corrected); // Convert to IRQ number
 
     // Add your IRQ handling logic here
-    if (corrected == 32)
+    if (corrected == 0)
     { // Timer interrupt (IRQ0)
-        write_serial_str("Timer tick!");
+      tick++;
+      char tick_str[16];
+      iota64(tick_str, tick);
+      write_serial_str("tick ");
+      write_serial_str(tick_str);
+      write_serial_str("    \r");
+    }
+    else
+    {
+        char str[12];
+        iota(str, corrected);
+        write_serial_str("IRQ ");
+        write_serial_str(str);
+        write_serial_str(": ");
+        write_serial_str("\n");
     }
 }
 

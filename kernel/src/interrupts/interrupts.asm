@@ -1,25 +1,61 @@
 %macro isr_err_stub 1
 isr_stub_%+%1:
-    push %1
+    ; CPU already pushed error code
+    mov rdi, %1           ; Vector number
+    mov rsi, [rsp]        ; Get error code
     call exception_handler
-    add rsp, 8  ; Clean error code
+    add rsp, 8            ; Remove error code
     iretq
 %endmacro
 
 %macro isr_no_err_stub 1
 isr_stub_%+%1:
-    push 0       ; Dummy error code
-    push %1
+    mov rdi, %1           ; Vector number
+    xor rsi, rsi          ; Zero error code
     call exception_handler
-    add rsp, 16  ; Clean stack
     iretq
 %endmacro
 
 %macro irq_stub 1
 isr_stub_%+%1:
-    push %1
+    ; Save all registers
+    push rax
+    push rcx
+    push rdx
+    push rbx
+    push rbp
+    push rsi
+    push rdi
+    push r8
+    push r9
+    push r10
+    push r11
+    push r12
+    push r13
+    push r14
+    push r15
+
+    ; Pass vector and handle
+    mov rdi, %1
     call irq_handler
-    add rsp, 8   ; Clean vector number
+
+    ; Restore registers
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop r11
+    pop r10
+    pop r9
+    pop r8
+    pop rdi
+    pop rsi
+    pop rbp
+    pop rbx
+    pop rdx
+    pop rcx
+    pop rax
+    
     iretq
 %endmacro
 

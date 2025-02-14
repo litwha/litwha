@@ -155,15 +155,15 @@ void kernel_entrypoint(void)
         write_serial_str("Interrupts are not enabled!\n");
     }
 
-    outb(PIC1_DATA, 0xFE); // Unmask IRQ0 (timer)
-    outb(PIC2_DATA, 0xFF); // Mask all slave IRQs
+    // // After PIC remap
+    // outb(PIC1_DATA, 0xFE); // Unmask IRQ0 (timer)
+    // outb(PIC2_DATA, 0xFF); // Mask all slave IRQs
 
-    // After PIC remap
-    outb(0x40, 0x36); // Set PIT channel 0
-    outb(0x40, 0xA8); // Low byte of divisor (1193182 Hz / 1000 Hz)
-    outb(0x40, 0x04); // High byte of divisor
+    // Program PIT (timer)
+    outb(0x43, 0x36);       // Channel 0, rate generator
+    outb(0x40, 100 & 0xFF); // Low byte of divisor (100Hz)
+    outb(0x40, 100 >> 8);   // High byte of divisor
 
-    // Ensure the bootloader actually understands our base revision (see spec).
     if (LIMINE_BASE_REVISION_SUPPORTED == false)
     {
         stop();
